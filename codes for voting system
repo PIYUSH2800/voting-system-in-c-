@@ -1,0 +1,149 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Function declarations
+void menu();
+void castVotes(int totalVotes);
+void showResults();
+void addCandidates();
+void resetVotes();
+void freeMemory();
+
+int *votes;                   
+char **candidates;           
+int candidateCount = 0;     
+
+int main() {
+    int choice, totalVotes;
+
+    printf("Welcome to the Online Voting System!\n");
+    addCandidates();
+
+    printf("\nEnter the total number of votes to cast: ");
+    if (scanf("%d", &totalVotes) != 1 || totalVotes <= 0) {
+        printf("Invalid input! Exiting...\n");
+        exit(1);
+    }
+
+    while (1) {
+        menu();
+        printf("Enter your choice: ");
+        if (scanf("%d", &choice) != 1) { 
+            printf("Invalid input! Please enter a valid number.\n");
+            while (getchar() != '\n');  
+            continue;
+        }
+
+        switch (choice) {
+            case 1:
+                castVotes(totalVotes);
+                break;
+            case 2:
+                showResults();
+                break;
+            case 3:
+                resetVotes();
+                break;
+            case 4:
+                printf("Exiting... Thank you for participating!\n");
+                freeMemory();
+                exit(0);
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    }
+
+    return 0;
+}
+
+
+void menu() {
+    printf("\n--- Online Voting System ---\n");
+    printf("1. Cast Votes\n");
+    printf("2. Show Results\n");
+    printf("3. Reset Votes\n");
+    printf("4. Exit\n");
+}
+
+
+void castVotes(int totalVotes) {
+    int remainingVotes = totalVotes;
+    int vote;
+
+    printf("\n--- Cast Your Votes ---\n");
+    while (remainingVotes > 0) {
+        printf("Remaining votes: %d\n", remainingVotes);
+        for (int i = 0; i < candidateCount; i++) {
+            printf("%d. %s\n", i + 1, candidates[i]);
+        }
+        printf("Enter your choice (1-%d): ", candidateCount);
+
+        if (scanf("%d", &vote) != 1 || vote < 1 || vote > candidateCount) {
+            printf("Invalid choice! Please try again.\n");
+            while (getchar() != '\n');  
+            continue;
+        }
+
+        votes[vote - 1]++;
+        remainingVotes--;
+        printf("Vote cast for %s!\n", candidates[vote - 1]);
+    }
+
+    printf("All votes have been cast!\n");
+}
+
+
+void showResults() {
+    printf("\n--- Voting Results ---\n");
+    for (int i = 0; i < candidateCount; i++) {
+        printf("%s: %d votes\n", candidates[i], votes[i]);
+    }
+}
+
+
+void resetVotes() {
+    for (int i = 0; i < candidateCount; i++) {
+        votes[i] = 0;
+    }
+    printf("\nVotes have been reset to zero!\n");
+}
+
+
+void addCandidates() {
+    printf("\nEnter the number of candidates: ");
+    if (scanf("%d", &candidateCount) != 1 || candidateCount <= 0) {
+        printf("Invalid input! Exiting...\n");
+        exit(1);
+    }
+
+  
+    candidates = (char **)malloc(candidateCount * sizeof(char *));
+    votes = (int *)calloc(candidateCount, sizeof(int));
+    if (!candidates || !votes) {
+        printf("Memory allocation failed! Exiting...\n");
+        exit(1);
+    }
+
+
+    for (int i = 0; i < candidateCount; i++) {
+        char name[50];
+        printf("Enter the name of candidate %d: ", i + 1);
+        scanf(" %[^\n]", name); 
+        candidates[i] = strdup(name); 
+        if (!candidates[i]) {
+            printf("Memory allocation failed! Exiting...\n");
+            exit(1);
+        }
+    }
+}
+
+// Function to free allocated memory
+void freeMemory() {
+    for (int i = 0; i < candidateCount; i++) {
+        free(candidates[i]);
+    }
+    free(candidates);
+    free(votes);
+    printf("Memory freed successfully. Goodbye!\n");
+}
